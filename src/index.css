@@ -2,3 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+.bg-triangle-pattern {
+    background: repeating-conic-gradient(
+      #a1c4fd 0% 25%,
+      #c2e9fb 0% 50%
+    );
+    background-size: 20px 20px;
+}
+
+/* Sidebar adjustments */
+.sidebar {
+  width: 100%;
+  max-width: 250px; /* Adjust max-width as needed */
+  transition: transform 0.3s ease;
+}
+
+/* Main content adjustments */
+.main-content {
+  flex: 1;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  transition: margin-left 0.3s ease;
+}
+
+/* Add these styles to your CSS file */
+/* Add these styles to your CSS file */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .content {
+    margin-left: 0;
+  }
+  .header {
+    margin-left: 0;
+  }
+  .modal {
+    width: 90%;
+    max-width: none;
+  }
+}
+.flex-items-center {
+  display: flex;
+  align-items: center;
+}
+
+.co-container {
+  height: 60px; /* Adjust the height to match the screenshot */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border: 1px solid #e0e0e0; /* Optional: Add a border for better visual separation */
+  border-radius: 8px; /* Slight curve */
+  background-color: #f9f9f9; /* Optional: Background color for better visibility */
+  margin-bottom: 13px; /* Adjust spacing between containers */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+  transition: background-color 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.co-container:hover {
+  background-color: #e9f5ff; /* Optional: Change background on hover */
+  transform: translateY(-2px); /* Optional: Slight lift effect on hover */
+}
+
+.co-text {
+  font-weight: 500; /* Adjust the font weight to match the screenshot */
+  flex: 1;
+  color: #333; /* Adjust the text color as needed */
+}
+
+.assignments-container {
+  margin-left: 20px; /* Indent assignments under each CO */
+  margin-top: 10px; /* Space between CO and assignments */
+}
+
+.assignment-item {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assignment-actions {
+  display: flex;
+  gap: 10px;
+}

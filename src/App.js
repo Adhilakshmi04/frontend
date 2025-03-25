@@ -4,6 +4,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute"; 
+import PublicRoute from "./components/PublicRoute"; // Import the new component
 import Toast from "./components/Toast";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
@@ -11,44 +12,50 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import CourseManagement from "./components/CourseManagement";
 import CourseDetails from "./components/CourseDetails";
-// import AddStudent from "./components/AddStudent";
-// import CreateCourse from "./components/CreateCourse";
 import AddCourse from "./components/AddCourse";
+
 const App = () => {
   useEffect(() => {
     const sessionTimeout = setTimeout(() => {
       localStorage.removeItem("token"); 
+      localStorage.removeItem("sessionStart");
       alert("Session expired. You have been logged out.");
       window.location.href = "/login"; 
     }, 60*60*1000); 
 
     return () => clearTimeout(sessionTimeout); 
   }, []);
+  
   return (
     <Router>
       <Routes>
         <Route path="/" element={
-          <>
-            <Toast/>
-            <Register />
-          </>} />
-        <Route path="/login" element={
-          <>
-            <Toast/>
-            <Login/>
-          </>} />
-        <Route path="/forgot-password" element={
-          <>
-            <Toast/>
-            <ForgotPassword />
-          </>
+          <PublicRoute element={
+            <>
+              <Toast/>
+              <Login/>
+            </>
           } />
-        <Route path="/reset-password/:token" element={
-          <>
-            <Toast/>
-            <ResetPassword />
-          </>
         } />
+        
+        <Route path="/forgot-password" element={
+          <PublicRoute element={
+            <>
+              <Toast/>
+              <ForgotPassword />
+            </>
+          } />
+        } />
+        
+        <Route path="/reset-password/:token" element={
+          <PublicRoute element={
+            <>
+              <Toast/>
+              <ResetPassword />
+            </>
+          } />
+        } />
+        
         <Route
           path="/dashboard/admin"
           element={
