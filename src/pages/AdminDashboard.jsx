@@ -746,9 +746,18 @@ const AdminDashboard = () => {
   };
   
   
-  const FacultyModal = () => (
+  const FacultyModal = ({
+    showFacultyModal,
+    setShowFacultyModal,
+    facultyFormData,
+    handleFacultyInputChange,
+    handleAddFaculty
+  }) => (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${showFacultyModal ? '' : 'hidden'}`}>
-      <div className="fixed inset-0 bg-black opacity-50" onClick={() => setShowFacultyModal(false)}></div>
+      <div
+        className="fixed inset-0 bg-black opacity-50"
+        onClick={() => setShowFacultyModal(false)}
+      ></div>
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md z-10 p-6 relative">
         <button
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -761,7 +770,7 @@ const AdminDashboard = () => {
           <h2 className="text-xl font-semibold">Add New Faculty</h2>
         </div>
         <form onSubmit={handleAddFaculty} className="space-y-6">
-        <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ID</label>
             <input
               type="text"
@@ -772,8 +781,7 @@ const AdminDashboard = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-        </div>
-
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
@@ -809,7 +817,6 @@ const AdminDashboard = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-      
           <button
             type="submit"
             className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1357,7 +1364,11 @@ const AdminDashboard = () => {
           {activeSection === "dashboard" && <Dashboard />}
         </div>
       </div>
-      <FacultyModal />
+      <FacultyModal showFacultyModal={showFacultyModal}
+  setShowFacultyModal={setShowFacultyModal}
+  facultyFormData={facultyFormData}
+  handleFacultyInputChange={handleFacultyInputChange}
+  handleAddFaculty={handleAddFaculty}/>
       <StudentModal />
       <Toast />
     </div>

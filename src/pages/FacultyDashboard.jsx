@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Search, Clock, Home, BookOpen, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import '../index.css';
+import { toast } from 'react-hot-toast';
 
 const FacultyDashboard = () => {
   const token = localStorage.getItem("token");

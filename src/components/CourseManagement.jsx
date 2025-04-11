@@ -48,14 +48,10 @@ const CourseManagement = () => {
         console.error("Error fetching course:", error);
         toast.error("Failed to fetch course details.", { position: "top-right" });
       }
-      finally {
-        setIsLoading(false); // Reset loading state
-      }
     };
 
     fetchCourse();
   }, [courseId]);
-
   useEffect(() => {
     const fetchBatches = async () => {
       try {
@@ -90,7 +86,6 @@ const CourseManagement = () => {
   }, [sidebarOpen]);
 
   const handleAddStudent = async () => {
-    setIsLoading(true);
     const emailArray = studentEmail.split(",").map((email) => email.trim());
     try {
       const token = localStorage.getItem("token");
@@ -102,62 +97,64 @@ const CourseManagement = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: emailArray, batch: selectedBatch }),
+          body: JSON.stringify({ email: emailArray }),
         }
       );
       const data = await response.json();
-
-      let updatedStudents = [...students];
-
       emailArray.forEach((email) => {
         const successEntry = data.addedStudents.find((entry) => entry.email === email);
         const errorEntry = data.errors.find((entry) => entry.email === email);
 
         if (successEntry) {
           toast.success(successEntry.message, { position: "top-right" });
-          updatedStudents = [...updatedStudents, successEntry.student];
+          setStudents((prevStudents) => [...prevStudents, successEntry.student]);
         } else if (errorEntry) {
           toast.error(`Error with ${email}: ${errorEntry.message}`, { position: "top-right" });
         }
       });
 
-      setStudents(updatedStudents);
       setStudentEmail("");
-      setSelectedBatch("");
-      setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding student:", error);
       toast.error("Failed to add student(s).", { position: "top-right" });
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleDeleteStudent = async (studentId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:5000/api/faculty/course/${courseId}/delete-student/${studentId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(data.message, { position: "top-right" });
-        setStudents(students.filter((student) => student._id !== studentId));
-      } else {
-        toast.error(data.message || "Failed to delete student.", { position: "top-right" });
+ // Replace your handleDeleteStudent function with this:
+const handleDeleteStudent = async (studentId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `http://localhost:5000/api/faculty/course/${courseId}/remove-student/${studentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
       }
-    } catch (error) {
-      console.error("Error deleting student:", error);
-      toast.error("Failed to delete student.", { position: "top-right" });
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error(`Server responded with status: ${response.status}`);
     }
-  };
+    
+    const data = await response.json();
+
+    if (data.success) {
+      toast.success(data.message, { position: "top-right" });
+      // Update the students state with filtered array
+      setStudents(students.filter((student) => student._id !== studentId));
+    } else {
+      toast.error(data.message || "Failed to remove student from course.", { position: "top-right" });
+    }
+  } catch (error) {
+    console.error("Error removing student from course:", error);
+    toast.error("Failed to remove student from course. Please check the console for details.", { position: "top-right" });
+  }
+};
 
   // Handler for students added via AddStudentListForm
   const handleBulkStudentsAdded = (newStudents) => {
@@ -317,7 +314,7 @@ const CourseManagement = () => {
                             <Trash size={18} />
                           </button>
                         </td>
-                      </tr>
+                      </tr> 
                     ))}
                   </tbody>
                 </table>
@@ -414,15 +411,20 @@ const CourseManagement = () => {
 
       {/* Chat Component */}
       {isChatOpen && (
-        <div className="fixed top-0 right-0 h-full w-96 bg-[#12182B] shadow-lg p-4 z-50 transform transition-transform duration-300">
-          <Chat
-            userId={facultyId}
-            courseName={courseName}
-            username={facultyName}
-            room={courseId}
-            onClose={() => setIsChatOpen(false)}
-          />
-        </div>
+      <div
+      className={`fixed top-0 right-0 h-full w-96 bg-[#12182B] shadow-lg p-4 z-50 transform transition-transform ease-in-out duration-[1000ms] ${
+        isChatOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      }`}
+    >
+      <Chat
+        userId={facultyId}
+        courseName={courseName}
+        username={facultyName}
+        room={courseId}
+        onClose={() => setIsChatOpen(false)}
+      />
+    </div>
+    
       )}
     </div>
   );

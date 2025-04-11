@@ -30,9 +30,9 @@ const StudentDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [studentProfile, setStudentProfile] = useState({
-    name: "Student Name",
-    email: "student@example.com",
-    department: "Computer Science",
+    name: "Raseeth Ansar",
+    email: "2215035@nec.edu.in",
+    department: "Information Technology",
     year: "3rd Year"
   });
 

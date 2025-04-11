@@ -20,7 +20,7 @@ const App = () => {
       localStorage.removeItem("token"); 
       localStorage.removeItem("sessionStart");
       alert("Session expired. You have been logged out.");
-      window.location.href = "/login"; 
+      window.location.href = "/"; 
     }, 60*60*1000); 
 
     return () => clearTimeout(sessionTimeout); 
@@ -28,6 +28,7 @@ const App = () => {
   
   return (
     <Router>
+      <Toast />
       <Routes>
         <Route path="/" element={
           <PublicRoute element={
