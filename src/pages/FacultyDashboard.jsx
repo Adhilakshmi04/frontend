@@ -18,6 +18,7 @@ const FacultyDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [loadingError, setLoadingError] = useState(false); // Add loading error state
   const navigate = useNavigate();
   const [showAIChat, setShowAIChat] = useState(false);
 
@@ -52,7 +53,8 @@ const FacultyDashboard = () => {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const token = localStorage.getItem("token");
+      setIsLoading(true); // Set loading to true
+      setLoadingError(false); // Reset loading error
       try {
         const response = await fetch("http://localhost:5000/api/faculty/my-courses", {
           headers: { Authorization: `Bearer ${token}` },
@@ -78,11 +80,14 @@ const FacultyDashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching courses:", error);
+        setLoadingError(true); // Set loading error to true
+      } finally {
+        setIsLoading(false); // Set loading to false
       }
     };
 
     fetchCourses();
-  }, []);
+  }, [token]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -91,7 +96,6 @@ const FacultyDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:5000/api/faculty/create-course", {
         method: "POST",
         headers: {
@@ -287,7 +291,7 @@ const FacultyDashboard = () => {
     if (activeSection === "recents") return "Recent Courses";
     return "All Courses";
   };
-  
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     toast.success("Logout successfully!", { position: "top-right" });
@@ -319,7 +323,15 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
-          {displayedCourses.length > 0 ? (
+          {loadingError ? (
+            <div className="flex flex-col items-center justify-center p-6 bg-gray-100 rounded-xl border border-gray-400 shadow-xl transform transition-all duration-500 delay-500">
+              <img src="/login_page_image.webp" alt="Error" className="w-16 h-16 mb-2 opacity-50" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Failed to fetch courses</h3>
+              <p className="text-gray-600 mb-4 text-center max-w-sm">
+                Please try again later.
+              </p>
+            </div>
+          ) : displayedCourses.length > 0 ? (
             <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
               {displayedCourses.map((course) => (
                 <CourseCard key={course._id} course={course} />
@@ -347,9 +359,9 @@ const FacultyDashboard = () => {
           )}
         </main>
       </div>
-      
+
       {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
-      
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[360px] sm:max-w-[380px] p-6 sm:p-8 rounded-lg shadow-2xl relative border border-gray-400 transform transition-all duration-300 scale-100 opacity-100 min-h-[480px] flex flex-col justify-between">
@@ -448,7 +460,7 @@ const FacultyDashboard = () => {
           <img src="/Studying-GIF-by-AUF-CCS-unscreen.gif" alt="Loading" className="w-40 h-40" />
         </div>
       )}
-      
+
       <ToastContainer />
     </div>
   );

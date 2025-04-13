@@ -54,6 +54,43 @@ const Chat = ({ userId, courseName, username, room, onClose }) => {
     }
   };
 
+  const formatMessageDate = (timestamp) => {
+    const messageDate = new Date(timestamp?.toDate());
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    // Check if the message is from today
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+
+    // Check if the message is from yesterday
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+
+    // Otherwise, return the date as DD/MM/YYYY
+    return messageDate.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const groupMessagesByDate = (messages) => {
+    return messages.reduce((acc, message) => {
+      const date = formatMessageDate(message.createdAt);
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(message);
+      return acc;
+    }, {});
+  };
+
+  const groupedMessages = groupMessagesByDate(messages);
+
   return (
     <div className="flex flex-col h-screen"
          style={{
@@ -76,26 +113,35 @@ const Chat = ({ userId, courseName, username, room, onClose }) => {
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4 bg-opacity-90 bg-gray-800 border-t border-gray-700 rounded-lg">
-        <div className="space-y-2">
-          {messages.filter((message) => message.createdAt).map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.userId === userId ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg p-3 shadow-sm
-                  ${message.userId === userId
-                    ? 'bg-blue-100 rounded-tr-none'
-                    : 'bg-gray-700 rounded-tl-none'}`}
-              >
-                {message.userId !== userId && (
-                  <div className="font-medium text-blue-600 text-sm">{message.username}</div>
-                )}
-                <p className={message.userId === userId ? "text-gray-800" : "text-gray-200"}>{message.text}</p>
-                <div className="text-right mt-1">
-                  <span className="text-xs text-gray-500">{formatTimestamp(message.createdAt)}</span>
+        <div className="space-y-4">
+          {Object.keys(groupedMessages).map((date) => (
+            <div key={date} className="space-y-2">
+              <div className="flex justify-center">
+                <div className="bg-gray-800 text-gray-400 text-xs px-3 py-1 rounded-full">
+                  {date}
                 </div>
               </div>
+              {groupedMessages[date].map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.userId === userId ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg p-3 shadow-sm
+                      ${message.userId === userId
+                        ? 'bg-blue-100 rounded-tr-none'
+                        : 'bg-gray-700 rounded-tl-none'}`}
+                  >
+                    {message.userId !== userId && (
+                      <div className="font-medium text-blue-600 text-sm">{message.username}</div>
+                    )}
+                    <p className={message.userId === userId ? "text-gray-800" : "text-gray-200"}>{message.text}</p>
+                    <div className="text-right mt-1">
+                      <span className="text-xs text-gray-500">{formatTimestamp(message.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

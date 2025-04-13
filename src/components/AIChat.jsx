@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSend, FiX, FiTrash2 } from 'react-icons/fi';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const AIChat = ({ onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -145,9 +145,15 @@ const AIChat = ({ onClose }) => {
       });
 
       const aiData = await aiResponse.json();
+
+      // Clean the response by removing stars and # characters
+      let cleanedContent = aiData.choices[0].message.content;
+      cleanedContent = cleanedContent.replace(/\*/g, ''); // Remove all asterisks
+      cleanedContent = cleanedContent.replace(/#/g, ''); // Remove all hashtags
+
       const aiMessage = {
         role: 'assistant',
-        content: aiData.choices[0].message.content,
+        content: cleanedContent,
         timestamp: new Date()
       };
 
@@ -182,6 +188,7 @@ const AIChat = ({ onClose }) => {
     }
   };
 
+  // Function to format message content
   const formatMessage = (content) => {
     if (content.includes('```')) {
       return content.split('```').map((part, index) => {
@@ -196,6 +203,31 @@ const AIChat = ({ onClose }) => {
       });
     }
     return <p className="mb-2">{content}</p>;
+  };
+
+  // Function to format date like WhatsApp (today, yesterday, or date)
+  const formatMessageDate = (timestamp) => {
+    const messageDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    // Check if the message is from today
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+
+    // Check if the message is from yesterday
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+
+    // Otherwise, return the date as DD/MM/YYYY
+    return messageDate.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   };
 
   return (
@@ -219,32 +251,54 @@ const AIChat = ({ onClose }) => {
         </div>
       </div>
 
-      <div className="h-[calc(100vh-200px)] sm:h-[500px] overflow-y-auto p-4 bg-[#0d1435]">
+      <div className="h-[calc(100vh-200px)] sm:h-[calc(100vh-250px)] overflow-y-auto p-4 bg-[#0d1435]">
         <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-l-lg rounded-br-lg'
-                    : 'bg-gray-700 text-white rounded-r-lg rounded-bl-lg'
-                } p-3 shadow-md`}
-              >
-                <div className="text-xs text-gray-300 mb-1">
-                  {message.role === 'user' ? 'You' : 'AI Assistant'}
-                </div>
-                <div className="text-sm">
-                  {formatMessage(message.content)}
-                </div>
-                <div className="text-xs text-gray-400 text-right mt-1">
-                  {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+          {messages.length > 0 && (
+            <div className="flex justify-center">
+              <div className="bg-gray-800 text-gray-400 text-xs px-3 py-1 rounded-full">
+                {formatMessageDate(messages[0].timestamp)}
               </div>
             </div>
-          ))}
+          )}
+
+          {messages.map((message, index) => {
+            // Check if we need to add a date header
+            const showDateHeader = index > 0 &&
+              formatMessageDate(message.timestamp) !== formatMessageDate(messages[index - 1].timestamp);
+
+            return (
+              <React.Fragment key={index}>
+                {showDateHeader && (
+                  <div className="flex justify-center">
+                    <div className="bg-gray-800 text-gray-400 text-xs px-3 py-1 rounded-full">
+                      {formatMessageDate(message.timestamp)}
+                    </div>
+                  </div>
+                )}
+
+                <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[80%] ${
+                      message.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-l-lg rounded-br-lg'
+                        : 'bg-gray-700 text-white rounded-r-lg rounded-bl-lg'
+                    } p-3 shadow-md`}
+                  >
+                    <div className="text-xs text-gray-300 mb-1">
+                      {message.role === 'user' ? 'You' : 'AI Assistant'}
+                    </div>
+                    <div className="text-sm">
+                      {formatMessage(message.content)}
+                    </div>
+                    <div className="text-xs text-gray-400 text-right mt-1">
+                      {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          })}
+
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-700 text-white rounded-lg p-4 max-w-[80%]">
