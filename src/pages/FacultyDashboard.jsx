@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Search, Clock, Home, BookOpen, Menu, X } from "lucide-react";
+import { Plus, Search, Clock, Home, BookOpen, Menu, X, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import '../index.css';
 import { toast } from 'react-hot-toast';
+import AIChat from '../components/AIChat';
 
 const FacultyDashboard = () => {
   const token = localStorage.getItem("token");
@@ -17,6 +18,7 @@ const FacultyDashboard = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
+  const [showAIChat, setShowAIChat] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -208,54 +210,38 @@ const FacultyDashboard = () => {
   );
 
   const Header = () => (
-    <div className="flex justify-between items-center mb-4 p-4 bg-[#080D27] shadow-md">
-      <div className="flex items-center">
-        {!isDesktop && (
-          <button
-            className="mr-3 text-white"
-            onClick={toggleSidebar}
-          >
-            <Menu size={24} />
-          </button>
-        )}
-
-        <div className={`flex items-center transform transition-all duration-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <h1 className="text-xl font-bold text-white mr-3 truncate">Faculty Dashboard</h1>
+    <header className="bg-[#080D27] shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center">
+            {!isDesktop && (
+              <button
+                onClick={toggleSidebar}
+                className="mr-4 text-gray-300 hover:text-white"
+              >
+                <Menu size={24} />
+              </button>
+            )}
+            <h1 className="text-2xl font-semibold text-white">Faculty Dashboard</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowAIChat(true)}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <MessageCircle size={20} />
+              <span>AI Assistant</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
-
-      <div className={`flex items-center space-x-4 transform transition-all duration-500 delay-200 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-3 py-2 bg-[#2158D2] text-white rounded-lg flex items-center transition-all duration-300 transform shadow-lg hover:bg-[#1a46a8]"
-        >
-          <Plus className="mr-2 flex-shrink-0" size={20} />
-          <span className="hidden sm:inline">Add New Course</span>
-          <span className="sm:hidden">Add</span>
-        </button>
-        <button
-  onClick={handleLogout}
-  className="flex items-center text-white transition-all duration-300 transform hover:text-gray-300"
->
-  <span className="hidden sm:inline">Logout</span>
-  <svg
-    className="ml-2 flex-shrink-0"
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-</button>
-
-      </div>
-    </div>
+    </header>
   );
 
   const CourseCard = ({ course }) => {
@@ -304,165 +290,158 @@ const FacultyDashboard = () => {
 
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-[#080D27] via-[#080D27] to-[#080D27] text-white overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
+      <div className={`transition-all duration-300 ${isDesktop ? 'ml-64' : ''}`}>
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <h2 className={`text-lg font-bold text-gray-800 transform transition-all duration-500 delay-300 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+              {getSectionTitle()}
+            </h2>
 
-      <div className={`flex-1 overflow-auto relative bg-white text-gray-800 ${isDesktop ? 'ml-64' : ''}`}>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full max-h-4xl bg-blue-300 opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute top-3/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-300 opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/4 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-200 opacity-5 rounded-full blur-3xl"></div>
+            <div className={`relative w-full sm:w-auto transform transition-all duration-500 delay-400 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
+              <input
+                type="text"
+                placeholder="Search..."
+                className="pl-8 pr-3 py-1 bg-gray-100 border border-gray-400 rounded-lg w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-800 placeholder-gray-600 placeholder-opacity-50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <div className="relative z-10">
-          <Header />
+          {displayedCourses.length > 0 ? (
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+              {displayedCourses.map((course) => (
+                <CourseCard key={course._id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <div className={`flex flex-col items-center justify-center p-6 bg-gray-100 rounded-xl border border-gray-400 shadow-xl transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+              <img src="/login_page_image.webp" alt="No courses" className="w-16 h-16 mb-2 opacity-50" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">No courses found</h3>
+              <p className="text-gray-600 mb-4 text-center max-w-sm">
+                {activeSection === "all" ? "You haven't created any courses yet." :
+                 activeSection === "recents" ? "You haven't viewed any courses recently." :
+                 "No content available in this section."}
+              </p>
+              {activeSection === "all" && (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-3 py-2 bg-[#2158D2] text-white rounded-lg flex items-center transition-all duration-300 shadow-lg hover:bg-[#1a46a8]"
+                >
+                  <Plus className="mr-2" size={20} />
+                  Create Your First Course
+                </button>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+      {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[360px] sm:max-w-[380px] p-6 sm:p-8 rounded-lg shadow-2xl relative border border-gray-400 transform transition-all duration-300 scale-100 opacity-100 min-h-[480px] flex flex-col justify-between">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
 
-          <main className="px-4 pb-20">
-            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <h2 className={`text-lg font-bold text-gray-800 transform transition-all duration-500 delay-300 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-                {getSectionTitle()}
-              </h2>
-
-              <div className={`relative w-full sm:w-auto transform transition-all duration-500 delay-400 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-8 pr-3 py-1 bg-gray-100 border border-gray-400 rounded-lg w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-800 placeholder-gray-600 placeholder-opacity-50"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center">
+                <BookOpen size={24} className="text-[#2158D2] mr-2 mt-1" />
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Create Course</h3>
               </div>
             </div>
 
-            {displayedCourses.length > 0 ? (
-              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-                {displayedCourses.map((course) => (
-                  <CourseCard key={course._id} course={course} />
-                ))}
-              </div>
-            ) : (
-              <div className={`flex flex-col items-center justify-center p-6 bg-gray-100 rounded-xl border border-gray-400 shadow-xl transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-                <img src="/login_page_image.webp" alt="No courses" className="w-16 h-16 mb-2 opacity-50" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">No courses found</h3>
-                <p className="text-gray-600 mb-4 text-center max-w-sm">
-                  {activeSection === "all" ? "You haven't created any courses yet." :
-                   activeSection === "recents" ? "You haven't viewed any courses recently." :
-                   "No content available in this section."}
-                </p>
-                {activeSection === "all" && (
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="px-3 py-2 bg-[#2158D2] text-white rounded-lg flex items-center transition-all duration-300 shadow-lg hover:bg-[#1a46a8]"
-                  >
-                    <Plus className="mr-2" size={20} />
-                    Create Your First Course
-                  </button>
-                )}
+            {errorMessage && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4">
+                {errorMessage}
               </div>
             )}
-          </main>
-        </div>
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white w-full max-w-[360px] sm:max-w-[380px] p-6 sm:p-8 rounded-lg shadow-2xl relative border border-gray-400 transform transition-all duration-300 scale-100 opacity-100 min-h-[480px] flex flex-col justify-between">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
 
-              <div className="flex items-center justify-center mb-6">
-                <div className="flex items-center">
-                  <BookOpen size={24} className="text-[#2158D2] mr-2 mt-1" />
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Create Course</h3>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-2">
+                <label className="block text-base font-semibold text-gray-800">
+                  Course Title:
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
+                />
               </div>
 
-              {errorMessage && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4">
-                  {errorMessage}
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="block text-base font-semibold text-gray-800">
+                  Course Description:
+                </label>
+                <input
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
+                />
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-2">
-                  <label className="block text-base font-semibold text-gray-800">
-                    Course Title:
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="block text-base font-semibold text-gray-800">
+                  Department:
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-base font-semibold text-gray-800">
-                    Course Description:
-                  </label>
-                  <input
-                    type="text"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="block text-base font-semibold text-gray-800">
+                  Batch:
+                </label>
+                <input
+                  type="text"
+                  name="batch"
+                  value={formData.batch}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-base font-semibold text-gray-800">
-                    Department:
-                  </label>
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-base font-semibold text-gray-800">
-                    Batch:
-                  </label>
-                  <input
-                    type="text"
-                    name="batch"
-                    value={formData.batch}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 bg-gray-100 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200 text-gray-800"
-                  />
-                </div>
-
-                <div className="mt-9 mb-5">
-                  <button
-                    type="submit"
-                    className="w-full bg-[#2158D2] text-white py-3 rounded-md transition-all duration-300 shadow-lg hover:bg-[#1a46a8]"
-                  >
-                    Create Course
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="mt-9 mb-5">
+                <button
+                  type="submit"
+                  className="w-full bg-[#2158D2] text-white py-3 rounded-md transition-all duration-300 shadow-lg hover:bg-[#1a46a8]"
+                >
+                  Create Course
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
 
-        {isLoading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-[#080D27] z-50">
-            <img src="/Studying-GIF-by-AUF-CCS-unscreen.gif" alt="Loading" className="w-40 h-40" />
-          </div>
-        )} {/* Render the loading screen when isLoading is true */}
-      </div>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-[#080D27] z-50">
+          <img src="/Studying-GIF-by-AUF-CCS-unscreen.gif" alt="Loading" className="w-40 h-40" />
+        </div>
+      )} {/* Render the loading screen when isLoading is true */}
     </div>
   );
 };

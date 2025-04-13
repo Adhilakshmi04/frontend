@@ -14,8 +14,10 @@ import {
   Plus,
   Menu,
   X,
-  Clock
+  Clock,
+  MessageCircle
 } from "lucide-react";
+import AIChat from '../components/AIChat';
 
 const StudentDashboard = () => {
   const token = localStorage.getItem("token");
@@ -35,6 +37,7 @@ const StudentDashboard = () => {
     department: "Information Technology",
     year: "3rd Year"
   });
+  const [showAIChat, setShowAIChat] = useState(false);
 
   useEffect(() => {
     // Animation effect when component mounts
@@ -301,60 +304,38 @@ const StudentDashboard = () => {
   );
 
   const Header = () => (
-    <div className="flex justify-between items-center mb-4 p-4 bg-[#080D27] shadow-md">
-      <div className="flex items-center">
-        {!isDesktop && (
-          <button
-            className="mr-3 text-white"
-            onClick={toggleSidebar}
-          >
-            <Menu size={24} />
-          </button>
-        )}
-
-        <div className={`flex items-center transform transition-all duration-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <h1 className="text-xl font-bold text-white mr-3 truncate">
-            {activeSection === "courses" 
-              ? "My Enrolled Courses" 
-              : activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
-          </h1>
+    <header className="bg-[#080D27] shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center">
+            {!isDesktop && (
+              <button
+                onClick={toggleSidebar}
+                className="mr-4 text-gray-300 hover:text-white"
+              >
+                <Menu size={24} />
+              </button>
+            )}
+            <h1 className="text-2xl font-semibold text-white">Student Dashboard</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowAIChat(true)}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <MessageCircle size={20} />
+              <span>AI Assistant</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
-      
-      <div className={`flex items-center space-x-4 transform transition-all duration-500 delay-200 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search courses..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-700 placeholder-gray-600 placeholder-opacity-50 w-full sm:w-48"
-          />
-        </div>
-        <button
-  onClick={handleLogout}
-  className="flex items-center text-white transition-all duration-300 transform hover:text-gray-300"
->
-  <span className="hidden sm:inline">Logout</span>
-  <svg
-    className="ml-2 flex-shrink-0"
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-</button>
-
-      </div>
-    </div>
+    </header>
   );
 
   const PlaceholderView = ({ title }) => (
@@ -570,34 +551,15 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-[#080D27] via-[#080D27] to-[#080D27] text-white overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      
-      <div className={`flex-1 overflow-auto relative bg-white text-gray-800 ${isDesktop ? 'ml-64' : ''}`}>
-        {/* Background nebula effect */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full max-h-4xl bg-blue-300 opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute top-3/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-300 opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/4 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-200 opacity-5 rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10">
-          <Header />
-          
-          <main>
-            <MainContent />
-          </main>
-        </div>
-
-        {/* Help button */}
-        <div className="absolute bottom-4 right-4 z-10">
-          <button className="bg-[#2158D2] hover:bg-[#1a46a8] text-white p-3 rounded-full transition-all shadow-lg transform hover:scale-105">
-            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-          </button>
-        </div>
+      <div className={`transition-all duration-300 ${isDesktop ? 'ml-64' : ''}`}>
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <MainContent />
+        </main>
       </div>
+      {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
     </div>
   );
 };
