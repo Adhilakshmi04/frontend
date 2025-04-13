@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiSend, FiX } from 'react-icons/fi';
+import { FiSend, FiX, FiTrash2 } from 'react-icons/fi';
+import {jwtDecode} from 'jwt-decode';
 
 const AIChat = ({ onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -8,15 +9,31 @@ const AIChat = ({ onClose }) => {
   const messagesEndRef = useRef(null);
   const API_KEY = 'fw_3ZGSfkttd4BzxKoKnDzKCkhE';
 
+  const getUserId = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id; // Make sure this matches the field name in your JWT token
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Fetch chat history when component mounts
+  useEffect(() => {
+    fetchChatHistory();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Add window resize handler
   useEffect(() => {
     const handleResize = () => {
       const vh = window.innerHeight * 0.01;
@@ -25,17 +42,76 @@ const AIChat = ({ onClose }) => {
 
     handleResize();
     window.addEventListener('resize', handleResize);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const fetchChatHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const userId = getUserId();
+      if (!userId) {
+        console.error('No user ID found');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/chat/history', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.messages || []);
+      } else {
+        console.error('Failed to fetch chat history:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+    }
+  };
+
+  const clearChatHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const userId = getUserId();
+      if (!userId) {
+        console.error('No user ID found');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/chat/clear', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages([]);
+      } else {
+        console.error('Failed to clear chat history:', data.message);
+      }
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    const userId = getUserId();
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
+
     const userMessage = {
       role: 'user',
-      content: input
+      content: input,
+      timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -43,7 +119,8 @@ const AIChat = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
+      // First, get AI response
+      const aiResponse = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -67,18 +144,38 @@ const AIChat = ({ onClose }) => {
         })
       });
 
-      const data = await response.json();
+      const aiData = await aiResponse.json();
       const aiMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content
+        content: aiData.choices[0].message.content,
+        timestamp: new Date()
       };
+
+      // Then, save both messages to backend
+      const token = localStorage.getItem('token');
+      const saveResponse = await fetch('http://localhost:5000/api/chat/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          messages: [userMessage, aiMessage]
+        })
+      });
+
+      const saveData = await saveResponse.json();
+      if (!saveData.success) {
+        console.error('Failed to save messages:', saveData.message);
+      }
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.'
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date()
       }]);
     } finally {
       setIsLoading(false);
@@ -108,9 +205,18 @@ const AIChat = ({ onClose }) => {
           <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
           AI Assistant
         </h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-          <FiX size={20} />
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={clearChatHistory}
+            className="text-gray-400 hover:text-red-500 transition-colors flex items-center"
+          >
+            <FiTrash2 size={18} className="mr-1" />
+            <span className="text-sm">Clear</span>
+          </button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+            <FiX size={20} />
+          </button>
+        </div>
       </div>
       
       <div className="h-[calc(100vh-200px)] sm:h-[500px] overflow-y-auto p-4 bg-[#0d1435]">
@@ -134,7 +240,7 @@ const AIChat = ({ onClose }) => {
                   {formatMessage(message.content)}
                 </div>
                 <div className="text-xs text-gray-400 text-right mt-1">
-                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
             </div>
