@@ -218,7 +218,7 @@ const AIChat = ({ onClose }) => {
           </button>
         </div>
       </div>
-      
+
       <div className="h-[calc(100vh-200px)] sm:h-[500px] overflow-y-auto p-4 bg-[#0d1435]">
         <div className="space-y-4">
           {messages.map((message, index) => (
@@ -282,4 +282,4 @@ const AIChat = ({ onClose }) => {
   );
 };
 
-export default AIChat; 
+export default AIChat;

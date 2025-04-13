@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { 
-  Home, 
-  BookOpen, 
-  Star, 
-  Calendar, 
-  Bell, 
+import { toast, ToastContainer } from "react-toastify";
+import {
+  Home,
+  BookOpen,
+  Star,
+  Calendar,
+  Bell,
   User,
   FileText,
   Search,
@@ -15,9 +15,47 @@ import {
   Menu,
   X,
   Clock,
-  MessageCircle
+  MessageCircle,
+  LogOut
 } from "lucide-react";
 import AIChat from '../components/AIChat';
+import 'react-toastify/dist/ReactToastify.css';
+
+const Header = ({ handleLogout, toggleSidebar, isDesktop }) => (
+  <header className="bg-[#080D27] shadow-md">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center py-4">
+        <div className="flex items-center">
+          {!isDesktop && (
+            <button
+              onClick={toggleSidebar}
+              className="mr-4 text-gray-300 hover:text-white"
+            >
+              <Menu size={24} />
+            </button>
+          )}
+          <h1 className="text-2xl font-semibold text-white">Student Dashboard</h1>
+        </div>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setShowAIChat(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <MessageCircle size={20} />
+            <span>AI Assistant</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="text-gray-300 hover:text-white transition-colors flex items-center"
+          >
+            <LogOut size={20} className="mr-2" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+);
 
 const StudentDashboard = () => {
   const token = localStorage.getItem("token");
@@ -44,10 +82,10 @@ const StudentDashboard = () => {
     const timer = setTimeout(() => {
       setAnimationComplete(true);
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
@@ -75,7 +113,7 @@ const StudentDashboard = () => {
 
         if (data.success) {
           setCourses(data.courses);
-          
+
           // Load favorites from localStorage
           const storedFavorites = JSON.parse(localStorage.getItem("favoriteCourses") || "[]");
           setFavorites(storedFavorites);
@@ -114,7 +152,7 @@ const StudentDashboard = () => {
   const toggleFavorite = (course) => {
     const isFavorite = favorites.some(fav => fav.id === course._id);
     let updatedFavorites;
-    
+
     if (isFavorite) {
       updatedFavorites = favorites.filter(fav => fav.id !== course._id);
       toast.success(`${course.title} removed from favorites`);
@@ -122,7 +160,7 @@ const StudentDashboard = () => {
       updatedFavorites = [...favorites, { id: course._id, title: course.title }];
       toast.success(`${course.title} added to favorites`);
     }
-    
+
     setFavorites(updatedFavorites);
     localStorage.setItem("favoriteCourses", JSON.stringify(updatedFavorites));
   };
@@ -136,7 +174,7 @@ const StudentDashboard = () => {
   };
 
   // Filtered courses based on search term
-  const filteredCourses = courses.filter(course => 
+  const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -179,7 +217,7 @@ const StudentDashboard = () => {
           <div className="relative w-full h-full p-4 overflow-hidden">
             {/* Background nebula effect */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-300 opacity-10 rounded-full blur-3xl"></div>
-            
+
             <div className="relative z-10">
               <div className="flex items-center mb-8">
                 <svg className="w-10 h-10 text-white mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -190,7 +228,7 @@ const StudentDashboard = () => {
                   EduSpace
                 </h2>
               </div>
-              
+
               <div className="mb-8">
                 <div className="flex flex-col items-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-blue-500 mb-3 flex items-center justify-center text-white text-xl font-bold">
@@ -200,61 +238,61 @@ const StudentDashboard = () => {
                   <p className="text-xs text-gray-400">{studentProfile.department}</p>
                 </div>
               </div>
-              
+
               <nav className="space-y-2 mb-8">
-                <SidebarItem 
-                  icon={<Home size={20} />} 
-                  text="Dashboard" 
+                <SidebarItem
+                  icon={<Home size={20} />}
+                  text="Dashboard"
                   active={activeSection === "courses"}
                   onClick={() => {
                     setActiveSection("courses");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
-                <SidebarItem 
-                  icon={<BookOpen size={20} />} 
-                  text="My Courses" 
+                <SidebarItem
+                  icon={<BookOpen size={20} />}
+                  text="My Courses"
                   active={activeSection === "courses"}
                   onClick={() => {
                     setActiveSection("courses");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
-                <SidebarItem 
-                  icon={<Calendar size={20} />} 
-                  text="Schedule" 
+                <SidebarItem
+                  icon={<Calendar size={20} />}
+                  text="Schedule"
                   active={activeSection === "schedule"}
                   onClick={() => {
                     setActiveSection("schedule");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
-                <SidebarItem 
-                  icon={<Star size={20} />} 
-                  text="Favorites" 
+                <SidebarItem
+                  icon={<Star size={20} />}
+                  text="Favorites"
                   active={activeSection === "favorites"}
                   onClick={() => {
                     setActiveSection("favorites");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
-                <SidebarItem 
-                  icon={<Bell size={20} />} 
-                  text="Notifications" 
+                <SidebarItem
+                  icon={<Bell size={20} />}
+                  text="Notifications"
                   active={activeSection === "notifications"}
                   onClick={() => {
                     setActiveSection("notifications");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
-                <SidebarItem 
-                  icon={<User size={20} />} 
-                  text="Profile" 
+                <SidebarItem
+                  icon={<User size={20} />}
+                  text="Profile"
                   active={activeSection === "profile"}
                   onClick={() => {
                     setActiveSection("profile");
                     if (!isDesktop) setSidebarOpen(false);
-                  }} 
+                  }}
                 />
               </nav>
 
@@ -263,22 +301,22 @@ const StudentDashboard = () => {
                   <h3 className="font-semibold text-white">Quick Access</h3>
                 </div>
                 <nav className="space-y-2">
-                  <SidebarItem 
-                    icon={<FileText size={20} />} 
-                    text="Assignments" 
+                  <SidebarItem
+                    icon={<FileText size={20} />}
+                    text="Assignments"
                     active={false}
-                    onClick={() => {}} 
+                    onClick={() => {}}
                   />
-                  <SidebarItem 
-                    icon={<Bookmark size={20} />} 
-                    text="Resources" 
+                  <SidebarItem
+                    icon={<Bookmark size={20} />}
+                    text="Resources"
                     active={false}
-                    onClick={() => {}} 
+                    onClick={() => {}}
                   />
                 </nav>
               </div>
             </div>
-            
+
             {/* Version badge */}
             <div className="absolute bottom-4 left-4 bg-[#2158D2] bg-opacity-30 backdrop-blur-md px-4 py-2 rounded-full shadow-lg z-10">
               <p className="text-white text-sm flex items-center">
@@ -292,7 +330,7 @@ const StudentDashboard = () => {
   };
 
   const SidebarItem = ({ icon, text, active, onClick }) => (
-    <div 
+    <div
       className={`flex items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
         active ? "bg-[#2158D2] text-white" : "text-white hover:bg-[#101a3b]"
       }`}
@@ -301,41 +339,6 @@ const StudentDashboard = () => {
       <div className="flex-shrink-0">{icon}</div>
       <span className="ml-3 overflow-hidden whitespace-nowrap transition-opacity duration-200">{text}</span>
     </div>
-  );
-
-  const Header = () => (
-    <header className="bg-[#080D27] shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <div className="flex items-center">
-            {!isDesktop && (
-              <button
-                onClick={toggleSidebar}
-                className="mr-4 text-gray-300 hover:text-white"
-              >
-                <Menu size={24} />
-              </button>
-            )}
-            <h1 className="text-2xl font-semibold text-white">Student Dashboard</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setShowAIChat(true)}
-              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <MessageCircle size={20} />
-              <span>AI Assistant</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
   );
 
   const PlaceholderView = ({ title }) => (
@@ -350,7 +353,7 @@ const StudentDashboard = () => {
   const CourseCard = ({ course }) => {
     const progress = generateRandomProgressData();
     const isFavorite = favorites.some(fav => fav.id === course._id);
-    
+
     return (
       <div className="bg-white rounded-lg border border-gray-400 overflow-hidden transition-all duration-300 cursor-pointer transform relative shadow-sm hover:shadow-md"
            onClick={() => navigateToCourse(course._id)}>
@@ -358,7 +361,7 @@ const StudentDashboard = () => {
           <span className="absolute top-2 left-2 px-2 py-1 bg-white bg-opacity-70 text-[#080D27] rounded-full text-sm truncate max-w-[60%]">
             {course.department || "General"}
           </span>
-          <button 
+          <button
             className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-70 hover:bg-opacity-90 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -374,7 +377,7 @@ const StudentDashboard = () => {
         <div className="p-3 text-gray-800">
           <h3 className="text-base font-semibold mb-1 truncate">{course.title}</h3>
           <p className="text-sm text-gray-600 mb-2 truncate">Instructor: {course.instructor?.name || "Professor"}</p>
-          
+
           <div className="flex items-center text-sm text-gray-600">
             <Clock size={16} className="mr-1 flex-shrink-0" />
             <span>Updated recently</span>
@@ -417,7 +420,7 @@ const StudentDashboard = () => {
         return <PlaceholderView title="Student Profile" />;
       default:
         return (
-          <div className={`p-4 transform transition-all duration-500 delay-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+          <div className={`p-4 transform transition-all duration-500 delay-300 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
               {/* Stats cards */}
               <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
@@ -459,7 +462,7 @@ const StudentDashboard = () => {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-400">
                   <h3 className="text-lg font-semibold mb-4 text-gray-800">My Courses</h3>
-                  
+
                   {loading ? (
                     <div className="flex items-center justify-center h-40">
                       <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#2158D2]"></div>
@@ -493,10 +496,10 @@ const StudentDashboard = () => {
                             }}
                             className="p-2 hover:bg-gray-300 rounded-full transition-colors"
                           >
-                            <Star 
-                              size={18} 
-                              className={favorites.some(fav => fav.id === course._id) 
-                                ? "fill-yellow-500 text-yellow-500" 
+                            <Star
+                              size={18}
+                              className={favorites.some(fav => fav.id === course._id)
+                                ? "fill-yellow-500 text-yellow-500"
                                 : "text-gray-600"}
                             />
                           </button>
@@ -544,22 +547,30 @@ const StudentDashboard = () => {
         );
     }
   };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
-    alert("Logout successfully");
-    navigate('/'); // Adjust the path to your login page
+    toast.success("Logout successfully!", { position: "top-right" });
+    setTimeout(() => {
+      navigate('/'); // Adjust the path to your login page
+    }, 2000); // Delay navigation to allow the toast to show
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       <div className={`transition-all duration-300 ${isDesktop ? 'ml-64' : ''}`}>
-        <Header />
+        <Header
+          handleLogout={handleLogout}
+          toggleSidebar={toggleSidebar}
+          isDesktop={isDesktop}
+        />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <MainContent />
         </main>
       </div>
       {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
+      <ToastContainer />
     </div>
   );
 };

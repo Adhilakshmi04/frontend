@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Menu, X, BookOpen, ClipboardList, Users, Plus, UserPlus, Trash } from "lucide-react";
+import { Menu, X, BookOpen, ClipboardList, Users, Plus, UserPlus, Trash, ArrowLeft } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
 import { MessageCircle } from "lucide-react"; // Import the message icon
 import AddCourseMaterial from "./AddCourseMaterial";
@@ -12,6 +12,7 @@ import Chat from "./Chat.jsx";
 const CourseManagement = () => {
   const [selectedBatch, setSelectedBatch] = useState("");
   const { courseId } = useParams();
+  const navigate = useNavigate(); // Import useNavigate hook
   const [course, setCourse] = useState(null);
   const [studentEmail, setStudentEmail] = useState("");
   const [batches, setBatches] = useState([]);
@@ -176,6 +177,11 @@ const handleDeleteStudent = async (studentId) => {
     }
   };
 
+  // Handle back button click to navigate to the faculty dashboard
+  const handleBackClick = () => {
+    navigate('/dashboard/faculty');
+  };
+
   const SidebarItem = ({ icon, text, active, section }) => (
     <div
       className={`flex items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -247,6 +253,14 @@ const handleDeleteStudent = async (studentId) => {
   const Header = () => (
     <div className="flex justify-between items-center mb-4 p-4 bg-[#080D27] shadow-md">
       <div className="flex items-center">
+        {/* Back button */}
+        <button
+          className="mr-3 text-white hover:text-gray-300 transition-colors"
+          onClick={handleBackClick}
+        >
+          <ArrowLeft size={24} />
+        </button>
+        
         {!isDesktop && (
           <button
             className="mr-3 text-white"

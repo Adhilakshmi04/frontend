@@ -1,9 +1,52 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Menu, X, Plus, UserPlus, FileText, UploadCloud, Users, FileUp, List, Search, Book, BookOpen, GraduationCap, Home, Clock } from "lucide-react";
+import { Menu, X, Plus, UserPlus, FileText, UploadCloud, Users, FileUp, List, Search, Book, BookOpen, GraduationCap, Home, Clock, LogOut } from "lucide-react";
 import { toast } from "react-toastify";
 import Toast from "../components/Toast";
-import { TrashIcon } from "@heroicons/react/outline"; 
+import { TrashIcon } from "@heroicons/react/outline";
 import { useNavigate } from 'react-router-dom';
+
+const Header = ({ handleLogout, toggleSidebar, isDesktop, animationComplete, setShowFacultyModal, setShowStudentModal }) => (
+  <div className="flex justify-between items-center mb-4 p-4 bg-[#080D27] shadow-md">
+    <div className="flex items-center">
+      {!isDesktop && (
+        <button
+          className="mr-3 text-white"
+          onClick={toggleSidebar}
+        >
+          <Menu size={24} />
+        </button>
+      )}
+
+      <div className={`flex items-center transform transition-all duration-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+        <h1 className="text-xl font-bold text-white mr-3 truncate">Admin Dashboard</h1>
+      </div>
+    </div>
+
+    <div className="flex items-center space-x-4">
+      <button
+        onClick={() => setShowFacultyModal(true)}
+        className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center transition-all duration-300 transform shadow-lg hover:bg-blue-700"
+      >
+        <Plus className="mr-2 flex-shrink-0" size={20} />
+        <span className="hidden sm:inline">Add Faculty</span>
+      </button>
+      <button
+        onClick={() => setShowStudentModal(true)}
+        className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center transition-all duration-300 transform shadow-lg hover:bg-blue-700"
+      >
+        <Plus className="mr-2 flex-shrink-0" size={20} />
+        <span className="hidden sm:inline">Add Student</span>
+      </button>
+      <button
+        onClick={handleLogout}
+        className="flex items-center text-white transition-all duration-300 transform hover:text-gray-300"
+      >
+        <LogOut className="mr-2 flex-shrink-0" size={20} />
+        <span className="hidden sm:inline">Logout</span>
+      </button>
+    </div>
+  </div>
+);
 
 const AdminDashboard = () => {
   const token = localStorage.getItem("token");
@@ -38,7 +81,6 @@ const AdminDashboard = () => {
   const [studentBulkList, setStudentBulkList] = useState([]);
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showFacultyModal, setShowFacultyModal] = useState(false);
-  
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,19 +133,18 @@ const AdminDashboard = () => {
           "Authorization": `Bearer ${token}`
         }
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text(); // Get the error message from the response
         throw new Error(`Failed to fetch student list: ${errorText}`);
       }
-  
+
       const data = await response.json();
       setStudentList(data);
     } catch (error) {
       console.error("Error fetching student list:", error.message);
     }
   };
-  
 
   const fetchFacultyBatches = async () => {
     try {
@@ -119,7 +160,7 @@ const AdminDashboard = () => {
       console.error("Error fetching faculty batches:", error);
     }
   };
-  
+
   const fetchStudentBatches = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/admin/upload-studentbatch", {
@@ -134,7 +175,6 @@ const AdminDashboard = () => {
       console.error("Error fetching student batches:", error);
     }
   };
-  
 
   const handleChange = (e) => {
     setStudentFormData({ ...studentFormData, [e.target.name]: e.target.value });
@@ -308,63 +348,13 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const Header = () => (
-    <div className="flex justify-between items-center mb-4 p-4 bg-[#080D27] shadow-md">
-      <div className="flex items-center">
-        {!isDesktop && (
-          <button
-            className="mr-3 text-white"
-            onClick={toggleSidebar}
-          >
-            <Menu size={24} />
-          </button>
-        )}
-
-        <div className={`flex items-center transform transition-all duration-500 ${animationComplete ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <h1 className="text-xl font-bold text-white mr-3 truncate">Admin Dashboard</h1>
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={() => setShowFacultyModal(true)}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center transition-all duration-300 transform shadow-lg hover:bg-blue-700"
-        >
-          <Plus className="mr-2 flex-shrink-0" size={20} />
-          <span className="hidden sm:inline">Add Faculty</span>
-        </button>
-        <button
-          onClick={() => setShowStudentModal(true)}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center transition-all duration-300 transform shadow-lg hover:bg-blue-700"
-        >
-          <Plus className="mr-2 flex-shrink-0" size={20} />
-          <span className="hidden sm:inline">Add Student</span>
-        </button>
-        <button
-  onClick={handleLogout}
-  className="flex items-center text-white transition-all duration-300 transform hover:text-gray-300"
->
-  <span className="hidden sm:inline">Logout</span>
-  <svg
-    className="ml-2 flex-shrink-0"
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-</button>
-
-      </div>
-    </div>
-  );
-
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.success("Logout successfully!", { position: "top-right" });
+    setTimeout(() => {
+      navigate('/'); // Adjust the path to your login page
+    }, 2000); // Delay navigation to allow the toast to show
+  };
 
   const AddFacultyListForm = () => {
     const [file, setFile] = useState(null);
@@ -372,7 +362,7 @@ const AdminDashboard = () => {
     const [addedFaculties, setAddedFaculties] = useState([]);
     const [newlyAddedFaculties, setNewlyAddedFaculties] = useState([]);
     const fileInputRef = useRef(null);
-  
+
     // Handle file selection
     const handleFileChange = (e) => {
       const selectedFile = e.target.files[0];
@@ -384,40 +374,40 @@ const AdminDashboard = () => {
         setFile(selectedFile);
       }
     };
-  
+
     // Handle form submission
     const handleUpload = async (e) => {
       e.preventDefault();
-  
+
       if (!file) {
         toast.error("Please select a faculty file before uploading.");
         return;
       }
-  
+
       const formData = new FormData();
       formData.append("csvFile", file);
-  
+
       try {
         const response = await fetch("http://localhost:5000/api/admin/upload-facultyset", {
           method: "POST",
           body: formData,
         });
-  
+
         if (!response.ok) throw new Error("Failed to upload faculty list");
-  
+
         const data = await response.json();
         toast.success(data.message);
-  
+
         // Set the added faculties data
         setAddedFaculties(data.error.filter(err => err.message === "User or faculty already exists") || []);
         setNewlyAddedFaculties(data.success || []);
         console.log("Response Data:", data);
         console.log("Added Faculties:", addedFaculties);
         console.log("Newly Added Faculties:", newlyAddedFaculties);
-  
+
         // Show the modal
         setShowModal(true);
-  
+
         // Reset state after successful upload
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -425,12 +415,12 @@ const AdminDashboard = () => {
         toast.error("Failed to upload faculty file. Please try again.");
       }
     };
-  
+
     // Close the modal
     const closeModal = () => {
       setShowModal(false);
     };
-  
+
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Upload Faculty List</h2>
@@ -457,7 +447,7 @@ const AdminDashboard = () => {
                 onChange={handleFileChange}
               />
             </div>
-  
+
             {/* Display selected file name */}
             {file && (
               <div className="mt-2 text-sm text-gray-600">
@@ -465,7 +455,7 @@ const AdminDashboard = () => {
               </div>
             )}
           </div>
-  
+
           {/* Submit Button */}
           <button
             type="submit"
@@ -474,13 +464,13 @@ const AdminDashboard = () => {
             Upload Faculty List
           </button>
         </form>
-  
+
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
             <div className="bg-white rounded-lg p-6 max-w-3xl w-full">
               <h3 className="text-lg font-semibold mb-4">Upload Results</h3>
-  
+
               {/* Already Added Faculties Table */}
               <div className="mb-4">
                 <h4 className="text-md font-medium mb-2">Already Added Faculties:</h4>
@@ -507,7 +497,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500">No faculties added yet.</p>
                 )}
               </div>
-  
+
               {/* Newly Added Faculties Table */}
               <div className="mb-4">
                 <h4 className="text-md font-medium mb-2">Newly Added Faculties:</h4>
@@ -534,7 +524,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500">No new faculties added.</p>
                 )}
               </div>
-  
+
               {/* Close Button */}
               <button
                 onClick={closeModal}
@@ -548,6 +538,7 @@ const AdminDashboard = () => {
       </div>
     );
   };
+
   const AddStudentListForm = () => {
     const [studentBatchName, setStudentBatchName] = useState("");
     const [studentFile, setStudentFile] = useState(null);
@@ -555,7 +546,7 @@ const AdminDashboard = () => {
     const [addedStudents, setAddedStudents] = useState([]);
     const [newlyAddedStudents, setNewlyAddedStudents] = useState([]);
     const studentFileInputRef = useRef(null);
-  
+
     // Handle file selection
     const handleStudentFileChange = (e) => {
       const selectedFile = e.target.files[0];
@@ -567,43 +558,43 @@ const AdminDashboard = () => {
         setStudentFile(selectedFile);
       }
     };
-  
+
     // Handle form submission
     const handleStudentFileUpload = async (e) => {
       e.preventDefault();
-  
+
       if (!studentBatchName) {
         toast.error("Please enter a batch name.");
         return;
       }
-  
+
       if (!studentFile) {
         toast.error("Please select a student file before uploading.");
         return;
       }
-  
+
       const formData = new FormData();
       formData.append("csvFile", studentFile);
       formData.append("batchName", studentBatchName);
-  
+
       try {
         const response = await fetch("http://localhost:5000/api/admin/upload-studentbatch", {
           method: "POST",
           body: formData,
         });
-  
+
         if (!response.ok) throw new Error("Failed to upload student list");
-  
+
         const data = await response.json();
         toast.success(data.message);
-  
+
         // Set the added students data
         setAddedStudents(data.error.filter(err => err.message === "User or student already exists."));
         setNewlyAddedStudents(data.success);
-  
+
         // Show the modal
         setShowModal(true);
-  
+
         // Reset state after successful upload
         setStudentFile(null);
         setStudentBatchName("");
@@ -612,12 +603,12 @@ const AdminDashboard = () => {
         toast.error("Failed to upload student file. Please try again.");
       }
     };
-  
+
     // Close the modal
     const closeModal = () => {
       setShowModal(false);
     };
-  
+
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Upload Student List</h2>
@@ -666,13 +657,13 @@ const AdminDashboard = () => {
             Upload Student List
           </button>
         </form>
-  
+
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50">
             <div className="bg-white rounded-lg p-6 max-w-3xl w-full overflow-x-auto">
               <h3 className="text-lg font-semibold mb-4">Upload Results</h3>
-  
+
               {/* Already Added Students Table */}
               <div className="mb-4">
                 <h4 className="text-md font-medium mb-2">Already Added Students:</h4>
@@ -701,7 +692,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500">No students found that were already added.</p>
                 )}
               </div>
-  
+
               {/* Newly Added Students Table */}
               <div className="mb-4">
                 <h4 className="text-md font-medium mb-2">Newly Added Students:</h4>
@@ -730,7 +721,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500">No new students added.</p>
                 )}
               </div>
-  
+
               {/* Close Button */}
               <button
                 onClick={closeModal}
@@ -744,8 +735,7 @@ const AdminDashboard = () => {
       </div>
     );
   };
-  
-  
+
   const FacultyModal = ({
     showFacultyModal,
     setShowFacultyModal,
@@ -916,14 +906,18 @@ const AdminDashboard = () => {
   const ViewFacultyList = () => {
     const [facultyList, setFacultyList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-  
+
     // Fetch faculty list from backend
     useEffect(() => {
       const fetchFacultyList = async () => {
         try {
-          const response = await fetch("http://localhost:5000/api/admin/faculty-list");
+          const response = await fetch("http://localhost:5000/api/admin/faculty-list", {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
           if (!response.ok) throw new Error("Failed to fetch faculty list");
-  
+
           const data = await response.json();
           setFacultyList(data);
         } catch (error) {
@@ -931,10 +925,10 @@ const AdminDashboard = () => {
           toast.error("Failed to load faculty list");
         }
       };
-  
+
       fetchFacultyList();
     }, []);
-  
+
     // Filter faculty list based on search term (with fallback for undefined values)
     const filteredFacultyList = facultyList.filter(faculty =>
       (faculty?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -942,29 +936,29 @@ const AdminDashboard = () => {
       (faculty?.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (faculty?.id || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+
     // Handle delete action
     const handleDelete = async (facultyId) => {
       if (!window.confirm("Are you sure you want to delete this faculty member?")) {
         return;
       }
-  
+
       try {
         const token = localStorage.getItem("token");
         if (!token) {
           toast.error("Authorization token not found", { position: "top-right" });
           return;
         }
-  
+
         const response = await fetch(`http://localhost:5000/api/admin/delete-faculty/${facultyId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
+
         if (!response.ok) throw new Error('Failed to delete faculty member');
-  
+
         const data = await response.json();
         if (data.success) {
           toast.success(data.message, { position: "top-right" });
@@ -977,7 +971,7 @@ const AdminDashboard = () => {
         toast.error('Failed to delete faculty member');
       }
     };
-  
+
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         {/* Header and Search */}
@@ -994,7 +988,7 @@ const AdminDashboard = () => {
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-  
+
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -1008,7 +1002,7 @@ const AdminDashboard = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-  
+
             {/* Table Body */}
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredFacultyList.length > 0 ? (
@@ -1046,19 +1040,22 @@ const AdminDashboard = () => {
       </div>
     );
   };
-  
-  
+
   const ViewStudentList = () => {
     const [studentList, setStudentList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-  
+
     // Fetch student list from backend
     useEffect(() => {
       const fetchStudentList = async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/admin/student-list');
+          const response = await fetch('http://localhost:5000/api/admin/student-list', {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
           if (!response.ok) throw new Error('Failed to fetch student list');
-  
+
           const data = await response.json();
           setStudentList(data);
         } catch (error) {
@@ -1066,10 +1063,10 @@ const AdminDashboard = () => {
           toast.error('Failed to load student list');
         }
       };
-  
+
       fetchStudentList();
     }, []);
-  
+
     // Filter students based on search term (including batchName)
     const filteredStudentList = studentList.filter(student =>
       student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1078,29 +1075,29 @@ const AdminDashboard = () => {
       student.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.batchName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+
     // Handle delete action
     const handleDelete = async (studentId) => {
       if (!window.confirm("Are you sure you want to delete this student?")) {
         return;
       }
-  
+
       try {
         const token = localStorage.getItem("token");
         if (!token) {
           toast.error("Authorization token not found", { position: "top-right" });
           return;
         }
-  
+
         const response = await fetch(`http://localhost:5000/api/admin/delete-student/${studentId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
+
         if (!response.ok) throw new Error('Failed to delete student');
-  
+
         const data = await response.json();
         if (data.success) {
           toast.success(data.message, { position: "top-right" });
@@ -1113,7 +1110,7 @@ const AdminDashboard = () => {
         toast.error('Failed to delete student');
       }
     };
-  
+
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         {/* Header and Search */}
@@ -1130,7 +1127,7 @@ const AdminDashboard = () => {
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-  
+
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -1144,7 +1141,7 @@ const AdminDashboard = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-  
+
             {/* Table Body */}
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredStudentList.length > 0 ? (
@@ -1174,20 +1171,22 @@ const AdminDashboard = () => {
       </div>
     );
   };
-  
-  
-  
+
   const ViewStudentBatches = () => {
     const [studentBulkList, setStudentBulkList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-  
+
     // Fetch student batch list from backend
     useEffect(() => {
       const fetchStudentBatches = async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/admin/student-batches');
+          const response = await fetch('http://localhost:5000/api/admin/student-batches', {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
           if (!response.ok) throw new Error('Failed to fetch student batches');
-  
+
           const data = await response.json();
           setStudentBulkList(data);
         } catch (error) {
@@ -1195,16 +1194,16 @@ const AdminDashboard = () => {
           toast.error('Failed to load student batches');
         }
       };
-  
+
       fetchStudentBatches();
     }, []);
-  
+
     // Filter student batch list based on search term
     const filteredStudentBulkList = studentBulkList.filter(item =>
       item.batchName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.fileName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -1251,6 +1250,7 @@ const AdminDashboard = () => {
       </div>
     );
   };
+
   const Dashboard = () => {
     return (
       <div className="p-4">
@@ -1344,17 +1344,19 @@ const AdminDashboard = () => {
       </div>
     );
   };
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    alert("Logout successfully!")
-    navigate('/'); // Adjust the path to your login page
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Sidebar />
       <div className={`flex-grow ${isDesktop ? 'ml-64' : ''}`}>
-      <Header/>
+        <Header
+          handleLogout={handleLogout}
+          toggleSidebar={toggleSidebar}
+          isDesktop={isDesktop}
+          animationComplete={animationComplete}
+          setShowFacultyModal={setShowFacultyModal}
+          setShowStudentModal={setShowStudentModal}
+        />
         <div className="px-4 py-2">
           {activeSection === "addFacultyList" && <AddFacultyListForm />}
           {activeSection === "viewIndividualFaculty" && <ViewFacultyList />}
@@ -1364,11 +1366,13 @@ const AdminDashboard = () => {
           {activeSection === "dashboard" && <Dashboard />}
         </div>
       </div>
-      <FacultyModal showFacultyModal={showFacultyModal}
-  setShowFacultyModal={setShowFacultyModal}
-  facultyFormData={facultyFormData}
-  handleFacultyInputChange={handleFacultyInputChange}
-  handleAddFaculty={handleAddFaculty}/>
+      <FacultyModal
+        showFacultyModal={showFacultyModal}
+        setShowFacultyModal={setShowFacultyModal}
+        facultyFormData={facultyFormData}
+        handleFacultyInputChange={handleFacultyInputChange}
+        handleAddFaculty={handleAddFaculty}
+      />
       <StudentModal />
       <Toast />
     </div>

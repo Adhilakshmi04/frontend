@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Search, Clock, Home, BookOpen, Menu, X, MessageCircle } from "lucide-react";
+import { Plus, Search, Clock, Home, BookOpen, Menu, X, MessageCircle, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import '../index.css';
-import { toast } from 'react-hot-toast';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import AIChat from '../components/AIChat';
 
 const FacultyDashboard = () => {
@@ -111,11 +112,14 @@ const FacultyDashboard = () => {
 
         setIsModalOpen(false);
         setFormData({ title: "", description: "", department: "", batch: "" });
+        toast.success("Course created successfully!");
       } else {
         setErrorMessage(data.message);
+        toast.error(data.message);
       }
     } catch (error) {
       setErrorMessage("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -234,9 +238,10 @@ const FacultyDashboard = () => {
             </button>
             <button
               onClick={handleLogout}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-gray-300 hover:text-white transition-colors flex items-center"
             >
-              Logout
+              <LogOut size={20} className="mr-2" />
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -247,7 +252,7 @@ const FacultyDashboard = () => {
   const CourseCard = ({ course }) => {
     return (
       <div
-        className="bg-white rounded-lg border border-gray-400 overflow-hidden transition-all duration-300 cursor-pointer transform relative shadow-sm"
+        className="bg-white rounded-lg border border-gray-400 overflow-hidden transition-all duration-300 cursor-pointer transform relative shadow-sm hover:shadow-md"
         onClick={() => handleCourseClick(course._id)}
       >
         <div className="h-32 relative flex items-center justify-center bg-triangle-pattern">
@@ -282,12 +287,14 @@ const FacultyDashboard = () => {
     if (activeSection === "recents") return "Recent Courses";
     return "All Courses";
   };
+  
   const handleLogout = () => {
     localStorage.removeItem("token");
-    alert("Logout successfully!")
-    navigate('/'); // Adjust the path to your login page
+    toast.success("Logout successfully!", { position: "top-right" });
+    setTimeout(() => {
+      navigate('/'); // Adjust the path to your login page
+    }, 2000); // Delay navigation to allow the toast to show
   };
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -340,7 +347,9 @@ const FacultyDashboard = () => {
           )}
         </main>
       </div>
+      
       {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
+      
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[360px] sm:max-w-[380px] p-6 sm:p-8 rounded-lg shadow-2xl relative border border-gray-400 transform transition-all duration-300 scale-100 opacity-100 min-h-[480px] flex flex-col justify-between">
@@ -348,10 +357,7 @@ const FacultyDashboard = () => {
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-300"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <X size={24} />
             </button>
 
             <div className="flex items-center justify-center mb-6">
@@ -441,7 +447,9 @@ const FacultyDashboard = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-[#080D27] z-50">
           <img src="/Studying-GIF-by-AUF-CCS-unscreen.gif" alt="Loading" className="w-40 h-40" />
         </div>
-      )} {/* Render the loading screen when isLoading is true */}
+      )}
+      
+      <ToastContainer />
     </div>
   );
 };
