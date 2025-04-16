@@ -6,7 +6,7 @@ import { FaSpinner } from "react-icons/fa";
 import { MessageCircle } from "lucide-react"; // Import the message icon
 import AddCourseMaterial from "./AddCourseMaterial";
 import AssignmentForm from "./AssignmentForm";
-import AddStudentListForm from "./AddStudentListForm"; // Import the AddStudentListForm component
+import FacultyAddStudentListForm from "./FacultyAddStudentListForm"; // Import the renamed component
 import Chat from "./Chat.jsx";
 
 const CourseManagement = () => {
@@ -53,6 +53,7 @@ const CourseManagement = () => {
 
     fetchCourse();
   }, [courseId]);
+
   useEffect(() => {
     const fetchBatches = async () => {
       try {
@@ -121,46 +122,50 @@ const CourseManagement = () => {
     }
   };
 
- // Replace your handleDeleteStudent function with this:
-const handleDeleteStudent = async (studentId) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `http://localhost:5000/api/faculty/course/${courseId}/remove-student/${studentId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
+  const handleDeleteStudent = async (studentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5000/api/faculty/course/${courseId}/remove-student/${studentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error:", errorText);
+        throw new Error(`Server responded with status: ${response.status}`);
       }
-    );
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error:", errorText);
-      throw new Error(`Server responded with status: ${response.status}`);
-    }
-    
-    const data = await response.json();
 
-    if (data.success) {
-      toast.success(data.message, { position: "top-right" });
-      // Update the students state with filtered array
-      setStudents(students.filter((student) => student._id !== studentId));
-    } else {
-      toast.error(data.message || "Failed to remove student from course.", { position: "top-right" });
-    }
-  } catch (error) {
-    console.error("Error removing student from course:", error);
-    toast.error("Failed to remove student from course. Please check the console for details.", { position: "top-right" });
-  }
-};
+      const data = await response.json();
 
-  // Handler for students added via AddStudentListForm
+      if (data.success) {
+        toast.success(data.message, { position: "top-right" });
+        // Update the students state with filtered array
+        setStudents(students.filter((student) => student._id !== studentId));
+      } else {
+        toast.error(data.message || "Failed to remove student from course.", { position: "top-right" });
+      }
+    } catch (error) {
+      console.error("Error removing student from course:", error);
+      toast.error("Failed to remove student from course. Please check the console for details.", { position: "top-right" });
+    }
+  };
+
+  // Handler for students added via FacultyAddStudentListForm
   const handleBulkStudentsAdded = (newStudents) => {
     if (newStudents && newStudents.length > 0) {
-      setStudents([...students, ...newStudents]);
+      setStudents(prevStudents => {
+        // Filter out any duplicates that might already exist in the students array
+        const newStudentIds = new Set(newStudents.map(student => student._id));
+        const filteredPrevStudents = prevStudents.filter(student => !newStudentIds.has(student._id));
+        return [...filteredPrevStudents, ...newStudents];
+      });
       setIsModalOpen(false);
     }
   };
@@ -260,7 +265,7 @@ const handleDeleteStudent = async (studentId) => {
         >
           <ArrowLeft size={24} />
         </button>
-        
+
         {!isDesktop && (
           <button
             className="mr-3 text-white"
@@ -309,29 +314,29 @@ const handleDeleteStudent = async (studentId) => {
                 <h3 className="text-lg font-semibold mb-4">Enrolled Students</h3>
                 <div className="overflow-x-auto">
                   <table className="min-w-full bg-white border border-gray-300 shadow-md rounded-lg overflow-hidden">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">S.No</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student, index) => (
-                      <tr key={student._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
-                        <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name || "Unnamed Student"}</td>
-                        <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
-                        <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          <button onClick={() => handleDeleteStudent(student._id)} className="text-red-500 hover:text-red-700">
-                            <Trash size={18} />
-                          </button>
-                        </td>
-                      </tr> 
-                    ))}
-                  </tbody>
-                </table>
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">S.No</th>
+                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
+                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {students.map((student, index) => (
+                        <tr key={student._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
+                          <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name || "Unnamed Student"}</td>
+                          <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
+                          <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <button onClick={() => handleDeleteStudent(student._id)} className="text-red-500 hover:text-red-700">
+                              <Trash size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -404,7 +409,7 @@ const handleDeleteStudent = async (studentId) => {
               {/* Bulk student addition form */}
               {addMethod === 'bulk' && (
                 <div className="flex-1">
-                  <AddStudentListForm
+                  <FacultyAddStudentListForm
                     courseId={courseId}
                     onStudentsAdded={handleBulkStudentsAdded}
                   />
@@ -425,20 +430,19 @@ const handleDeleteStudent = async (studentId) => {
 
       {/* Chat Component */}
       {isChatOpen && (
-      <div
-      className={`fixed top-0 right-0 h-full w-96 bg-[#12182B] shadow-lg p-4 z-50 transform transition-transform ease-in-out duration-[1000ms] ${
-        isChatOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-      }`}
-    >
-      <Chat
-        userId={facultyId}
-        courseName={courseName}
-        username={facultyName}
-        room={courseId}
-        onClose={() => setIsChatOpen(false)}
-      />
-    </div>
-    
+        <div
+          className={`fixed top-0 right-0 h-full w-96 bg-[#12182B] shadow-lg p-4 z-50 transform transition-transform ease-in-out duration-[1000ms] ${
+            isChatOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+          }`}
+        >
+          <Chat
+            userId={facultyId}
+            courseName={courseName}
+            username={facultyName}
+            room={courseId}
+            onClose={() => setIsChatOpen(false)}
+          />
+        </div>
       )}
     </div>
   );
